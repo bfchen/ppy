@@ -1,36 +1,59 @@
 from PIL import Image
 import os
+import imghdr
+import shutil
 
-
-def resize(path):
+def resize(path, originPath, savePath):
+	print(path)
+	print(originPath)
+	print(savePath)
+	originalPath = path
+	tail = path - originPath
+	print(tail)
+	tail = "".join(tail)
+	print(tail)
+	path = os.path.join(savePath, tail)
+	print("+++++", os.path.join(savePath, path))
 	im = Image.open(path)
 	w, h = im.size
 	im.thumbnail((w/2, h/2))
 
 	l = path.split("/")
-	print("---",l)
 	last = l.pop()
-	print("+++", last)
+	path = '/'.join(l) + "/new/"
+	if not os.path.exists(path):
+		os.mkdir(path)
 
-	print("0000", l)
-	path = '/'.join(l) + "/new/" + "@2x.".join(last.split("."))
-	print("%%%%%:", path)
-	im.save(path, 'jpeg')
+	copyPath = path + "@2x.".join(last.split("."))
+	shutil.copyfile(originalPath, copyPath)
+	# print(copyPath)
+	newPath = os.path.join(path, last)
+	# print(newPath)
+	im.save(newPath, 'jpeg')
 
 
-path = "/Users/admin/Desktop/a/0.jpg"
-l = path.split('/')
-print(l)
-print('/'.join(l))
 
-picPath = input("输入图片路径:") 
+picPath = input("输入图片路径:").strip()
+newPath = picPath.split("/")
+newPath.pop()
+newPath = "/".join(newPath)
+newPath = os.path.join(newPath, "new")
+if not os.path.exists(newPath):
+	os.mkdir(newPath)
 if not "/" in picPath[-1]:
 	picPath += "/"
+if not "/" in newPath[-1]:
+	newPath += "/"
 pisList = os.listdir(picPath)
+# plist = [p + "/" for p in pisList if not "/" in p[-1]
 for path in pisList:
-	if "jpg" in path or "png" in path:
-		
-		resize(picPath + path)
-# resize(path)
+	p = picPath+path
+	# print(p)
+	if os.path.isdir(p):
+		continue
+	imageType = imghdr.what(p)
+	# print ("type: ", imageType, type(imageType))
+	if imageType == "jpeg" or imageType == "png":
+		resize(p, picPath, newPath)
 
 
