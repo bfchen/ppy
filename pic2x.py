@@ -3,34 +3,37 @@ import os
 import imghdr
 import shutil
 
+
 def resize(path, originPath, savePath):
-	print(path)
-	print(originPath)
-	print(savePath)
-	originalPath = path
-	tail = path - originPath
-	print(tail)
-	tail = "".join(tail)
-	print(tail)
-	path = os.path.join(savePath, tail)
-	print("+++++", os.path.join(savePath, path))
-	im = Image.open(path)
-	w, h = im.size
-	im.thumbnail((w/2, h/2))
+    im = Image.open(path)
+    originalPath = path
+    tail = path.replace(originPath, '')
+    singlePath = os.path.join(savePath, tail)
+    # 二倍图路径
+    componentes = singlePath.split("/")
+    last = componentes.pop()
+    diretory = "/".join(componentes)
+    if not os.path.exists(diretory):
+        os.makedirs(diretory)
+    last = "@2x.".join(last.split("."))
+    doublePath = os.path.join("/".join(componentes), last)
+    # 复制二倍图
+    shutil.copyfile(originalPath, doublePath)
 
-	l = path.split("/")
-	last = l.pop()
-	path = '/'.join(l) + "/new/"
-	if not os.path.exists(path):
-		os.mkdir(path)
+    # 生成单倍图
+    w, h = im.size
+    im.thumbnail((w / 2, h / 2))
+    im.save(singlePath, 'jpeg')
 
-	copyPath = path + "@2x.".join(last.split("."))
-	shutil.copyfile(originalPath, copyPath)
-	# print(copyPath)
-	newPath = os.path.join(path, last)
-	# print(newPath)
-	im.save(newPath, 'jpeg')
 
+def createIcon(path, savePath):
+    shutil.copyfile(path, savePath + "icon.png")
+    im = Image.open(path)
+    sizeList = [1024, 512, 167, 152, 76, 80, 40, 58, 29, 28, 20, 108, 16]
+    for length in sizeList:
+        newPath = savePath + "icon" + str(length) + ".png"
+        im.thumbnail((length, length))
+        im.save(newPath)
 
 
 picPath = input("输入图片路径:").strip()
@@ -39,21 +42,34 @@ newPath.pop()
 newPath = "/".join(newPath)
 newPath = os.path.join(newPath, "new")
 if not os.path.exists(newPath):
-	os.mkdir(newPath)
-if not "/" in picPath[-1]:
-	picPath += "/"
-if not "/" in newPath[-1]:
-	newPath += "/"
-pisList = os.listdir(picPath)
-# plist = [p + "/" for p in pisList if not "/" in p[-1]
-for path in pisList:
-	p = picPath+path
-	# print(p)
-	if os.path.isdir(p):
-		continue
-	imageType = imghdr.what(p)
-	# print ("type: ", imageType, type(imageType))
-	if imageType == "jpeg" or imageType == "png":
-		resize(p, picPath, newPath)
+    os.mkdir(newPath)
+if "/" not in picPath[-1]:
+    picPath += "/"
+if "/" not in newPath[-1]:
+    newPath += "/"
 
 
+# 一倍图和二倍图
+print("生成二倍图、单倍图中...")
+for root, dirs, files in os.walk(picPath):
+    for name in files:
+        if name == "icon.png":
+            continue
+        path = os.path.join(root, name)
+        if os.path.isdir(path):
+            continue
+        imageType = imghdr.what(path)
+        # print ("type: ", imageType, type(imageType))
+        if imageType == "jpeg" or imageType == "png":
+            resize(path, picPath, newPath)
+
+# icon
+print("生成二倍图、单倍图完成")
+print("生成icon中...")
+iconDir = newPath + "icon/"
+
+if not os.path.exists(iconDir):
+    os.mkdir(iconDir)
+iconPath = picPath + "icon.png"
+createIcon(iconPath, iconDir)
+print("生成icon完成")
