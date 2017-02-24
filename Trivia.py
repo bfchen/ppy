@@ -38,7 +38,6 @@ class Trivia(object):
 		printText(font1, 5, 80, "QUESTION"+str(question))
 		printText(font2, 20, 120, self.data[self.current], yellow)
 
-
 		if self.score:
 			self.colors = [white, white, white, white]
 			self.colors[self.correct-1] = green
@@ -59,7 +58,6 @@ class Trivia(object):
 
 
 	def hanleInput(self, number):
-		
 		if not self.scored and not self.failed:
 			if number == self.correct:
 				self.scored = True
