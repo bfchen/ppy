@@ -67,7 +67,7 @@ for root, dirs, files in os.walk(picPath):
 print("生成二倍图、单倍图完成")
 print("生成icon中...")
 iconDir = newPath + "icon/"
-
+#print(iconDir)
 if not os.path.exists(iconDir):
     os.mkdir(iconDir)
 iconPath = picPath + "icon.png"
